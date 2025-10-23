@@ -22,40 +22,120 @@ enum layer_names {
     _MACRO,
 };
 
+enum tap_dance_codes {
+    DANCE_QUIT,
+    DANCE_TASK,
+    DANCE_QWERTY,
+    DANCE_PWR,
+    DANCE_SCR,
+    DANCE_FN,
+    DANCE_MAIN,
+    DANCE_NLK,
+    DANCE_SHCT,
+    DANCE_COPY,
+    DANCE_END,
+};
+
 // Start Super ALT↯TAB and Mac/Win mode
 bool is_alt_tab_active = false; // ADD this near the beginning of keymap.c
 uint16_t alt_tab_timer = 0;     // we will be using them soon.
+bool is_cmd_tab_active = false; // For Mac CMD+TAB
+uint16_t cmd_tab_timer = 0;     // Timer for CMD+TAB
+uint16_t SW_LANG = RGUI(KC_SPACE); // Default language switch key
 
 enum custom_keycodes {          // Make sure have the awesome keycode ready
   ALT_TAB = SAFE_RANGE,
   ALT_SFT_TAB,
+  CMD_TAB,
+  CMD_SFT_TAB,
   MAC_MODE,
   WIN_MODE,
   SHCT_TG,
+  SW_LANG_KEY,
+  SW_APP,
   HTTPS,
+  SMART_HOME,
+  SMART_END,
+  SCROLL_UP,
+  SCROLL_DOWN,
+  BACK,
+  NEXT,
 };
+
+bool process_detected_host_os_kb(os_variant_t detected_os) {
+    if (!process_detected_host_os_user(detected_os)) {
+        return false;
+    }
+    switch (detected_os) {
+        case OS_MACOS:
+            keymap_config.swap_lalt_lgui = true;
+            keymap_config.swap_rctl_rgui = true;
+            SW_LANG = LCTL(KC_SPACE);
+            break;
+        case OS_IOS:
+            keymap_config.swap_lalt_lgui = true;
+            keymap_config.swap_rctl_rgui = true;
+            SW_LANG = LCTL(KC_SPACE);
+            break;
+        case OS_WINDOWS:
+            keymap_config.swap_lalt_lgui = false;
+            keymap_config.swap_rctl_rgui = false;
+            SW_LANG = LALT(KC_LSFT);
+            break;
+        case OS_LINUX:
+            keymap_config.swap_lalt_lgui = false;
+            keymap_config.swap_rctl_rgui = false;
+            SW_LANG = LALT(KC_LSFT);
+            break;
+        case OS_UNSURE:
+            keymap_config.swap_lalt_lgui = false;
+            keymap_config.swap_rctl_rgui = false;
+            SW_LANG = LALT(KC_LSFT);
+            break;
+    }
+
+    return true;
+}
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) { // This will do most of the grunt work with the keycodes.
     case ALT_TAB:
+    case CMD_TAB:
       if (record->event.pressed) {
-        if (!is_alt_tab_active) {
-          is_alt_tab_active = true;
-          register_code(KC_LALT);
+        if (keycode == CMD_TAB && (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui)) {
+            if (!is_cmd_tab_active) {
+                is_cmd_tab_active = true;
+                register_code(KC_LGUI);
+            }
+            cmd_tab_timer = timer_read();
+        } else {
+            if (!is_alt_tab_active) {
+                is_alt_tab_active = true;
+                register_code(KC_LALT);
+            }
+            alt_tab_timer = timer_read();
         }
-        alt_tab_timer = timer_read();
         register_code(KC_TAB);
       } else {
         unregister_code(KC_TAB);
       }
       break;
     case ALT_SFT_TAB:
+    case CMD_SFT_TAB:
       if (record->event.pressed) {
-        if (!is_alt_tab_active) {
-          is_alt_tab_active = true;
-          register_code(KC_LALT);
+        if (keycode == CMD_SFT_TAB && (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui)) {
+            if (!is_cmd_tab_active) {
+                is_cmd_tab_active = true;
+                register_code(KC_LGUI);
+            }
+            cmd_tab_timer = timer_read();
+        } else {
+            if (!is_alt_tab_active) {
+                is_alt_tab_active = true;
+                register_code(KC_LALT);
+            }
+            alt_tab_timer = timer_read();
         }
-        alt_tab_timer = timer_read();
         register_code(KC_LSFT);
         register_code(KC_TAB);
       } else {
@@ -84,9 +164,162 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
       }
       break;
+    case SW_LANG_KEY:
+      if (record->event.pressed) {
+        register_code16(SW_LANG);
+      } else {
+        unregister_code16(SW_LANG);
+      }
+      break;
+    case SW_APP:
+      if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+        // macOS behavior - use CMD_TAB
+        if (record->event.pressed) {
+          if (!is_cmd_tab_active) {
+            is_cmd_tab_active = true;
+            register_code(KC_LGUI);
+          }
+          cmd_tab_timer = timer_read();
+          register_code(KC_TAB);
+        } else {
+          unregister_code(KC_TAB);
+        }
+      } else {
+        // Windows/Linux behavior - use ALT_TAB
+        if (record->event.pressed) {
+          if (!is_alt_tab_active) {
+            is_alt_tab_active = true;
+            register_code(KC_LALT);
+          }
+          alt_tab_timer = timer_read();
+          register_code(KC_TAB);
+        } else {
+          unregister_code(KC_TAB);
+        }
+      }
+      break;
     case HTTPS:
       if (record->event.pressed) {
         SEND_STRING("https://");
+      }
+      break;
+    case SMART_HOME:
+      if (record->event.pressed) {
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          // Mac mode
+          register_code(KC_LGUI);
+          register_code(KC_LEFT);
+        } else {
+          // Windows/Linux mode
+          register_code(KC_HOME);
+        }
+      } else {
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          // Mac mode
+          unregister_code(KC_LGUI);
+          unregister_code(KC_LEFT);
+        } else {
+          // Windows/Linux mode
+          unregister_code(KC_HOME);
+        }
+      }
+      break;
+    case SMART_END:
+      static bool shift_held = false;
+      if (record->event.pressed) {
+        if (record->tap.count == 0) {
+          // Being held - activate shift
+          shift_held = true;
+          register_code(KC_LSFT);
+        } else {
+          // Being tapped - send appropriate END command
+          if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+            // Mac mode - GUI+Right
+            register_code(KC_LGUI);
+            register_code(KC_RIGHT);
+          } else {
+            // Windows/Linux mode - End
+            register_code(KC_END);
+          }
+        }
+      } else {
+        // Key released
+        if (shift_held) {
+          shift_held = false;
+          unregister_code(KC_LSFT);
+        }
+      }
+      break;
+    case SCROLL_UP:
+      if (record->event.pressed) {
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          // Mac mode - natural scrolling
+          register_code16(KC_MS_WH_DOWN);
+        } else {
+          // Windows/Linux mode - traditional scrolling
+          register_code16(KC_MS_WH_UP);
+        }
+      } else {
+        // Key released
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          unregister_code16(KC_MS_WH_DOWN);
+        } else {
+          unregister_code16(KC_MS_WH_UP);
+        }
+      }
+      break;
+    case SCROLL_DOWN:
+      if (record->event.pressed) {
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          // Mac mode - natural scrolling
+          register_code16(KC_MS_WH_UP);
+        } else {
+          // Windows/Linux mode - traditional scrolling
+          register_code16(KC_MS_WH_DOWN);
+        }
+      } else {
+        // Key released
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          unregister_code16(KC_MS_WH_UP);
+        } else {
+          unregister_code16(KC_MS_WH_DOWN);
+        }
+      }
+      break;
+    case BACK:
+      if (record->event.pressed) {
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          // Mac mode - back in browser
+          register_code16(LGUI(KC_LBRC));
+        } else {
+          // Windows/Linux mode - back in browser
+          register_code16(LALT(KC_LEFT));
+        }
+      } else {
+        // Key released
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          unregister_code16(LGUI(KC_LBRC));
+        } else {
+          unregister_code16(LALT(KC_LEFT));
+        }
+      }
+      break;
+    case NEXT:
+      if (record->event.pressed) {
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          // Mac mode - forward in browser
+          register_code16(LGUI(KC_RBRC));
+        } else {
+          // Windows/Linux mode - forward in browser
+          register_code16(LALT(KC_RIGHT));
+        }
+      } else {
+        // Key released
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          unregister_code16(LGUI(KC_RBRC));
+        } else {
+          unregister_code16(LALT(KC_RIGHT));
+        }
       }
       break;
   }
@@ -98,6 +331,12 @@ void matrix_scan_user(void) { // The very important timer.
     if (timer_elapsed(alt_tab_timer) > 1000) {
       unregister_code(KC_LALT);
       is_alt_tab_active = false;
+    }
+  }
+  if (is_cmd_tab_active) {
+    if (timer_elapsed(cmd_tab_timer) > 1000) {
+      unregister_code(KC_LGUI);
+      is_cmd_tab_active = false;
     }
   }
 }
@@ -144,19 +383,6 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
 #    endif // CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_ENABLE
 #endif     // POINTING_DEVICE_ENABLE
 
-enum tap_dance_codes {
-    DANCE_QUIT,
-    DANCE_TASK,
-    DANCE_QWERTY,
-    DANCE_PWR,
-    DANCE_SCR,
-    DANCE_FN,
-    DANCE_MAIN,
-    DANCE_NLK,
-    DANCE_SHCT,
-    DANCE_COPY,
-};
-
 enum combo_events {
     ENTER,
     ESC,
@@ -174,15 +400,14 @@ enum combo_events {
 };
 uint16_t COMBO_LEN = COMBO_LENGTH;
 
-const uint16_t PROGMEM enter_combo[]    = {LALT_T(KC_R), RCTL_T(KC_S), COMBO_END};
+const uint16_t PROGMEM enter_combo[]    = {LALT_T(KC_R), LCTL_T(KC_S), COMBO_END};
 const uint16_t PROGMEM escape_combo[]   = {KC_L, KC_D, COMBO_END};
-const uint16_t PROGMEM escape_combo2[]  = {KC_L, KC_MS_WH_UP, KC_UP};
 const uint16_t PROGMEM shct_combo[]     = {LT(_SYM,KC_SPACE), RCTL_T(KC_TAB), COMBO_END};
-const uint16_t PROGMEM fn_to_combo[]    = {KC_N, KC_H, KC_M, RGUI_T(KC_SCLN), COMBO_END};
+const uint16_t PROGMEM fn_to_combo[]    = {KC_N, KC_H, KC_M, LGUI_T(KC_SCLN), COMBO_END};
 const uint16_t PROGMEM lang_sw_combo[]  = {LSFT_T(KC_C), LALT_T(KC_R), COMBO_END};
 const uint16_t PROGMEM macro_cr_combo[] = {LT(_SYM,KC_SPACE), LT(_NAV,KC_E), COMBO_END};
-const uint16_t PROGMEM macro_lt_combo[] = {KC_G, LGUI_T(KC_K), COMBO_END};
-const uint16_t PROGMEM macro_rt_combo[] = {KC_M, RGUI_T(KC_SCLN), COMBO_END};
+const uint16_t PROGMEM macro_lt_combo[] = {KC_G, RGUI_T(KC_K), COMBO_END};
+const uint16_t PROGMEM macro_rt_combo[] = {KC_M, LGUI_T(KC_SCLN), COMBO_END};
 const uint16_t PROGMEM num_mo_combo[]   = {KC_T, KC_W, COMBO_END};
 const uint16_t PROGMEM num_to_combo[]   = {KC_T, KC_W, KC_G, LGUI_T(KC_K), COMBO_END};
 const uint16_t PROGMEM lock_nav[]       = {LT(_NAV,KC_E), LT(_FN,KC_ENTER), COMBO_END};
@@ -190,10 +415,9 @@ const uint16_t PROGMEM lock_nav[]       = {LT(_NAV,KC_E), LT(_FN,KC_ENTER), COMB
 combo_t key_combos[] = {
     [ENTER]    = COMBO(enter_combo, KC_ENTER),
     [ESC]      = COMBO(escape_combo, KC_ESCAPE),
-    [ESC2]     = COMBO(escape_combo2, KC_ESCAPE),
     [SHORTCUT] = COMBO(shct_combo, MO(_SHORTCUT)),
     [FN_TO]    = COMBO(fn_to_combo, TO(_FN)),
-    [LANG_SW]  = COMBO(lang_sw_combo, LALT(KC_LSFT)),
+    [LANG_SW]  = COMBO(lang_sw_combo, SW_LANG_KEY),
     [MACRO_CR] = COMBO(macro_cr_combo, MO(_MACRO)),
     [MACRO_LT] = COMBO(macro_lt_combo, MO(_MACRO)),
     [MACRO_RT] = COMBO(macro_rt_combo, MO(_MACRO)),
@@ -204,10 +428,10 @@ combo_t key_combos[] = {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_MAIN] = LAYOUT(
-        C_S_T(KC_Q),    KC_L,           KC_D,           KC_P,           ALGR_T(KC_B),       /**/ ALGR_T(KC_J),      KC_F,           KC_O,           KC_U,           C_S_T(KC_QUOTE),
-        LSFT_T(KC_C),   LALT_T(KC_R),   RCTL_T(KC_S),   KC_T,           KC_G,               /**/ KC_M,              KC_N,           KC_A,           KC_I,           LSFT_T(KC_Y),
-        RCTL_T(KC_Z),   KC_X,           KC_V,           KC_W,           LGUI_T(KC_K),       /**/ RGUI_T(KC_SCLN),   KC_H,           KC_SLASH,       KC_COMMA,       RCTL_T(KC_DOT),
-                                        RCTL_T(KC_TAB), LT(_SYM,KC_SPACE), ALT_TAB,         /**/ LT(_FN,KC_ENTER),  LT(_NAV,KC_E)
+        C_S_T(KC_Q),    KC_L,           KC_D,           KC_P,           ALGR_T(KC_B),       /**/ ALGR_T(KC_J),      KC_F,           KC_O,           KC_U,           LSA_T(KC_QUOTE),
+        LSFT_T(KC_C),   LALT_T(KC_R),   LCTL_T(KC_S),   KC_T,           KC_G,               /**/ KC_M,              KC_N,           LCTL_T(KC_A),   KC_I,           LSFT_T(KC_Y),
+        RCTL_T(KC_Z),   KC_X,           KC_V,           KC_W,           RGUI_T(KC_K),       /**/ LGUI_T(KC_SCLN),   KC_H,           KC_SLASH,       KC_COMMA,       RCTL_T(KC_DOT),
+                                        RCTL_T(KC_TAB), LT(_SYM,KC_SPACE), SW_APP,          /**/ LT(_FN,KC_ENTER),  LT(_NAV,KC_E)
     ),
     [_QWERTY] = LAYOUT(
         KC_Q,           KC_W,           KC_E,           KC_R,           KC_T,               /**/ KC_Y,              KC_U,           KC_I,           KC_O,           KC_P,
@@ -217,8 +441,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [_SHORTCUT] = LAYOUT(
         TO(_MAIN),      KC_HOME,        KC_UP,          KC_END,         KC_MS_BTN2,         /**/ XXXXXXX,           XXXXXXX,        XXXXXXX,        XXXXXXX,        XXXXXXX,
-        C(KC_A),        KC_LEFT,        KC_DOWN,        KC_RIGHT,       KC_MS_BTN1,         /**/ XXXXXXX,           KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,        XXXXXXX,
-        C(KC_Z),        KC_BSPC,        C(KC_C),        C(KC_V),        C(KC_Y),            /**/ XXXXXXX,           HTTPS,          XXXXXXX,        XXXXXXX,        XXXXXXX,
+        RCTL(KC_A),     KC_LEFT,        KC_DOWN,        KC_RIGHT,       KC_MS_BTN1,         /**/ XXXXXXX,           KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,        XXXXXXX,
+        RCTL(KC_Z),     KC_BSPC,        LAG(LSFT(KC_V)),RCTL(KC_V),     RCTL(KC_Y),         /**/ XXXXXXX,           HTTPS,          XXXXXXX,        XXXXXXX,        XXXXXXX,
                                         _______,        _______,        XXXXXXX,            /**/ _______,           _______
     ),
     [_SYM] = LAYOUT(
@@ -228,21 +452,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                         MO(_FN),        XXXXXXX,        XXXXXXX,            /**/ _______,           MO(_MACRO)
     ),
     [_NAV] = LAYOUT(
-        RCTL(KC_LSFT),  KC_MS_WH_UP,    KC_MS_UP,       KC_MS_BTN3,     KC_LALT,            /**/ KC_ACL0,           KC_APPLICATION, KC_UP,          KC_PAGE_UP,     KC_CAPS_LOCK,
+        RCTL(KC_LSFT),  SCROLL_UP,      KC_MS_UP,       KC_MS_BTN3,     KC_RALT,            /**/ KC_ACL0,           KC_APPLICATION, KC_UP,          KC_PAGE_UP,     KC_CAPS_LOCK,
         TD(DANCE_COPY), KC_MS_LEFT,     KC_MS_DOWN,     KC_MS_RIGHT,    KC_INSERT,          /**/ KC_HOME,           KC_LEFT,        KC_DOWN,        KC_RIGHT,       LSFT_T(KC_END),
-        KC_RCTL,        KC_MS_WH_DOWN,  C(KC_V),        C(KC_W),        KC_LGUI,            /**/ KC_BSPC,           KC_DELETE,      LALT(KC_LSFT),  KC_PAGE_DOWN,   KC_RCTL,
-                                        KC_MS_BTN2,     KC_MS_BTN1,     ALT_TAB,            /**/ KC_ENTER,          TO(_MAIN)
+        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     KC_LCTL,            /**/ KC_BSPC,           KC_DELETE,      SW_LANG_KEY,    KC_PAGE_DOWN,   KC_RCTL,
+                                        KC_MS_BTN2,     KC_MS_BTN1,     SW_APP,             /**/ KC_ENTER,          TO(_MAIN)
     ),
     [_MOUSE] = LAYOUT(
-        TO(_MAIN),      KC_MS_WH_UP,    KC_UP,          KC_MS_BTN3,     DPI_MOD,            /**/ XXXXXXX,           XXXXXXX,        XXXXXXX,        XXXXXXX,        XXXXXXX,
+        TO(_MAIN),      SCROLL_UP,      KC_UP,          KC_MS_BTN3,     DPI_MOD,            /**/ XXXXXXX,           XXXXXXX,        XXXXXXX,        XXXXXXX,        XXXXXXX,
         TD(DANCE_COPY), KC_LEFT,        KC_DOWN,        KC_RIGHT,       SNIPING,            /**/ XXXXXXX,           SNIPING,        KC_MS_BTN1,     KC_MS_BTN2,     SNIPING,
-        KC_RCTL,        KC_MS_WH_DOWN,  C(KC_V),        C(KC_W),        S_D_MOD,            /**/ XXXXXXX,           DRGSCRL,        DPI_MOD,        S_D_MOD,        DRGSCRL,
+        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     S_D_MOD,            /**/ XXXXXXX,           DRGSCRL,        DPI_MOD,        S_D_MOD,        DRGSCRL,
                                         KC_MS_BTN2,     KC_MS_BTN1,     DRGSCRL,            /**/ KC_ENTER,          MO(_NAV)
     ),
     [_FN] = LAYOUT(
         KC_1,           KC_2,           KC_3,           KC_4,           KC_5,               /**/ KC_SCROLL_LOCK,    TD(DANCE_PWR),  LCA(KC_DELETE), KC_VOLU,        KC_PAUSE,
         KC_F1,          KC_F2,          KC_F3,          KC_F4,          KC_F5,              /**/ KC_F12,            KC_MPRV,        KC_MPLY,        KC_MUTE,        KC_MNXT,
-        KC_F6,          KC_F7,          KC_F8,          KC_F9,          KC_F10,             /**/ KC_F11,            XXXXXXX,        KC_MEH,         KC_VOLD,        KC_RCTL,
+        KC_F6,          KC_F7,          KC_F8,          KC_F9,          KC_F10,             /**/ KC_F11,            XXXXXXX,        KC_MEH,         KC_VOLD,        KC_LCTL,
                                         MO(_NUMPAD),    KC_LALT,        XXXXXXX,            /**/ TO(_MAIN),         KC_TAB
     ),
     [_NUMPAD] = LAYOUT(
@@ -255,7 +479,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         TD(DANCE_QWERTY), DM_REC1,      DM_REC2,        XXXXXXX,        QK_BOOT,            /**/ QK_BOOT,           MAC_MODE,       WIN_MODE,       XXXXXXX,        XXXXXXX,
         LSFT_T(KC_1),   KC_2,           KC_3,           KC_4,           KC_5,               /**/ KC_6,              KC_7,           KC_8,           KC_9,           LSFT_T(KC_0),
         DM_RSTP,        DM_PLY1,        DM_PLY2,        XXXXXXX,        XXXXXXX,            /**/ KC_BSPC,           KC_DELETE,      KC_SLASH,       KC_COMMA,       RCTL_T(KC_DOT),
-                                        LALT(KC_LEFT),  LALT(KC_RIGHT), XXXXXXX,            /**/ _______,           _______
+                                        BACK,           NEXT,           XXXXXXX,            /**/ _______,           _______
     ),
 };
 
@@ -437,23 +661,61 @@ void DANCE_SCR_reset(tap_dance_state_t *state, void *user_data);
 
 void on_DANCE_SCR(tap_dance_state_t *state, void *user_data) {
     if(state->count == 3) {
-        tap_code16(KC_PRINT_SCREEN);
-        tap_code16(KC_PRINT_SCREEN);
-        tap_code16(KC_PRINT_SCREEN);
+        // Triple tap behavior - consistent across OS
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+            // Mac mode
+            tap_code16(LSG(KC_4));
+            tap_code16(LSG(KC_4));
+            tap_code16(LSG(KC_4));
+        } else {
+            // Windows/Linux mode
+            tap_code16(KC_PRINT_SCREEN);
+            tap_code16(KC_PRINT_SCREEN);
+            tap_code16(KC_PRINT_SCREEN);
+        }
     }
     if(state->count > 3) {
-        tap_code16(KC_PRINT_SCREEN);
+        // More than triple tap behavior
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+            tap_code16(LSG(KC_4));
+        } else {
+            tap_code16(KC_PRINT_SCREEN);
+        }
     }
 }
 
 void DANCE_SCR_finished(tap_dance_state_t *state, void *user_data) {
     tap_state.state = cur_dance(state);
     switch (tap_state.state) {
-        case TD_SINGLE_TAP:         register_code16(KC_PRINT_SCREEN); break;
-        case TD_SINGLE_HOLD:        register_code16(LCTL(LSFT(KC_S))); break;
-        case TD_DOUBLE_TAP:         register_code16(KC_PRINT_SCREEN); register_code16(KC_PRINT_SCREEN); break;
-        case TD_DOUBLE_HOLD:        register_code16(LCTL(LSFT(KC_S))); break;
-        case TD_DOUBLE_SINGLE_TAP:  tap_code16(KC_PRINT_SCREEN); register_code16(KC_PRINT_SCREEN); break;
+        case TD_SINGLE_TAP:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                // Mac mode
+                register_code16(LSG(KC_4));
+            } else {
+                // Windows/Linux mode
+                register_code16(KC_PRINT_SCREEN);
+            }
+            break;
+        case TD_SINGLE_HOLD:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                // Mac mode
+                register_code16(LSG(KC_S));
+            } else {
+                // Windows/Linux mode  
+                register_code16(RCTL(LSFT(KC_S)));
+            }
+            break;
+        case TD_DOUBLE_TAP:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                // Mac mode: changed from LSG(KC_4) to LSG(KC_5)
+                register_code16(LSG(KC_5));
+                register_code16(LSG(KC_5));
+            } else {
+                // Windows/Linux mode
+                register_code16(KC_PRINT_SCREEN);
+                register_code16(KC_PRINT_SCREEN);
+            }
+            break;
         default: break;
     }
 }
@@ -461,11 +723,28 @@ void DANCE_SCR_finished(tap_dance_state_t *state, void *user_data) {
 void DANCE_SCR_reset(tap_dance_state_t *state, void *user_data) {
     wait_ms(10);
     switch (tap_state.state) {
-        case TD_SINGLE_TAP:         unregister_code16(KC_PRINT_SCREEN); break;
-        case TD_SINGLE_HOLD:        unregister_code16(LCTL(LSFT(KC_S))); break;
-        case TD_DOUBLE_TAP:         unregister_code16(KC_PRINT_SCREEN); break;
-        case TD_DOUBLE_HOLD:        unregister_code16(LCTL(LSFT(KC_S))); break;
-        case TD_DOUBLE_SINGLE_TAP:  unregister_code16(KC_PRINT_SCREEN); break;
+        case TD_SINGLE_TAP:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                unregister_code16(LSG(KC_4));
+            } else {
+                unregister_code16(KC_PRINT_SCREEN);
+            }
+            break;
+        case TD_SINGLE_HOLD:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                unregister_code16(LSG(KC_S));
+            } else {
+                unregister_code16(RCTL(LSFT(KC_S)));
+            }
+            break;
+        case TD_DOUBLE_TAP:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                // Was LSG(KC_S) here — should unregister the double-tap code used in finished (LSG(KC_5)).
+                unregister_code16(LSG(KC_5));
+            } else {
+                unregister_code16(KC_PRINT_SCREEN);
+            }
+            break;
         default: break;
     }
     tap_state.state = TD_NONE;
@@ -596,12 +875,17 @@ void DANCE_COPY_finished(tap_dance_state_t *state, void *user_data) {
 
     switch (tap_state.state) {
         case TD_SINGLE_TAP:
-            // Temporarily drop Shift so we don't send Ctrl+Shift+C
-            unregister_code(KC_LSFT);
-            register_code(KC_LCTL);
-            tap_code(KC_C);
-            unregister_code(KC_LCTL);
-            register_code(KC_LSFT); // Restore Shift if it was held
+            if (!state->interrupted) {
+                // Only do Ctrl+C if the tap wasn't interrupted by another key
+                unregister_code(KC_LSFT);
+                register_code(KC_RCTL);
+                tap_code(KC_C);
+                unregister_code(KC_RCTL);
+                register_code(KC_LSFT); // Restore Shift if it was held
+            } else {
+                // If interrupted, just act as a normal Shift key press
+                register_code(KC_LSFT);
+            }
             break;
 
         case TD_SINGLE_HOLD:
@@ -615,9 +899,54 @@ void DANCE_COPY_finished(tap_dance_state_t *state, void *user_data) {
 
 void DANCE_COPY_reset(tap_dance_state_t *state, void *user_data) {
     wait_ms(10);
-    unregister_code(KC_LCTL); // Safety: release Ctrl if stuck
+    unregister_code(KC_RCTL); // Safety: release Ctrl if stuck
     unregister_code(KC_C);    // Safety: release C if stuck
     unregister_code(KC_LSFT); // Always release Shift
+    tap_state.state = TD_NONE;
+}
+
+void on_DANCE_END(tap_dance_state_t *state, void *user_data);
+void DANCE_END_finished(tap_dance_state_t *state, void *user_data); 
+void DANCE_END_reset(tap_dance_state_t *state, void *user_data);
+
+void on_DANCE_END(tap_dance_state_t *state, void *user_data) {
+    if (state->count == 1 && state->pressed) {
+        register_code(KC_LSFT); // Instant Shift on hold
+    }
+}
+
+void DANCE_END_finished(tap_dance_state_t *state, void *user_data) {
+    tap_state.state = cur_dance(state);
+
+    switch (tap_state.state) {
+        case TD_SINGLE_TAP:
+            if (!state->interrupted) {
+                // Only do GUI+Right if the tap wasn't interrupted by another key
+                unregister_code(KC_LSFT);
+                register_code(KC_LGUI);
+                tap_code(KC_RIGHT);
+                unregister_code(KC_LGUI);
+                register_code(KC_LSFT); // Restore Shift if it was held
+            } else {
+                // If interrupted, just act as a normal Shift key press
+                register_code(KC_LSFT);
+            }
+            break;
+
+        case TD_SINGLE_HOLD:
+            // Shift already registered in on_DANCE_END()
+            break;
+
+        default:
+            break;
+    }
+}
+
+void DANCE_END_reset(tap_dance_state_t *state, void *user_data) {
+    wait_ms(10);
+    unregister_code(KC_LGUI); // Safety: release GUI if stuck
+    unregister_code(KC_RIGHT); // Safety: release Right if stuck
+    unregister_code(KC_LSFT);  // Always release Shift
     tap_state.state = TD_NONE;
 }
 
@@ -631,4 +960,5 @@ tap_dance_action_t tap_dance_actions[] = {
     [DANCE_NLK]    = ACTION_TAP_DANCE_FN_ADVANCED(on_DANCE_NLK, DANCE_NLK_finished, DANCE_NLK_reset),
     [DANCE_SHCT]   = ACTION_TAP_DANCE_FN_ADVANCED(NULL, DANCE_SHCT_finished, DANCE_SHCT_reset),
     [DANCE_COPY]   = ACTION_TAP_DANCE_FN_ADVANCED(on_DANCE_COPY, DANCE_COPY_finished, DANCE_COPY_reset),
+    [DANCE_END]    = ACTION_TAP_DANCE_FN_ADVANCED(on_DANCE_END, DANCE_END_finished, DANCE_END_reset),
 };
