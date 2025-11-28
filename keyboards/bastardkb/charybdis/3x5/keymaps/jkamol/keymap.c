@@ -51,7 +51,6 @@ enum custom_keycodes {          // Make sure have the awesome keycode ready
   MAC_MODE,
   WIN_MODE,
   SHCT_TG,
-  SW_LANG_KEY,
   SW_APP,
   HTTPS,
   SMART_HOME,
@@ -162,13 +161,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         } else {
           layer_move(_SHORTCUT);
         }
-      }
-      break;
-    case SW_LANG_KEY:
-      if (record->event.pressed) {
-        register_code16(SW_LANG);
-      } else {
-        unregister_code16(SW_LANG);
       }
       break;
     case SW_APP:
@@ -417,7 +409,7 @@ combo_t key_combos[] = {
     [ESC]      = COMBO(escape_combo, KC_ESCAPE),
     [SHORTCUT] = COMBO(shct_combo, MO(_SHORTCUT)),
     [FN_TO]    = COMBO(fn_to_combo, TO(_FN)),
-    [LANG_SW]  = COMBO(lang_sw_combo, SW_LANG_KEY),
+    [LANG_SW]  = COMBO(lang_sw_combo, RGUI(KC_SPACE)),
     [MACRO_CR] = COMBO(macro_cr_combo, MO(_MACRO)),
     [MACRO_LT] = COMBO(macro_lt_combo, MO(_MACRO)),
     [MACRO_RT] = COMBO(macro_rt_combo, MO(_MACRO)),
@@ -454,7 +446,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NAV] = LAYOUT(
         RCTL(KC_LSFT),  SCROLL_UP,      KC_MS_UP,       KC_MS_BTN3,     KC_RALT,            /**/ KC_ACL0,           KC_APPLICATION, KC_UP,          KC_PAGE_UP,     KC_CAPS_LOCK,
         TD(DANCE_COPY), KC_MS_LEFT,     KC_MS_DOWN,     KC_MS_RIGHT,    KC_INSERT,          /**/ KC_HOME,           KC_LEFT,        KC_DOWN,        KC_RIGHT,       LSFT_T(KC_END),
-        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     KC_LCTL,            /**/ KC_BSPC,           KC_DELETE,      SW_LANG_KEY,    KC_PAGE_DOWN,   KC_RCTL,
+        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     KC_LCTL,            /**/ KC_BSPC,           KC_DELETE,      RGUI(KC_SPACE), KC_PAGE_DOWN,   KC_RCTL,
                                         KC_MS_BTN2,     KC_MS_BTN1,     SW_APP,             /**/ KC_ENTER,          TO(_MAIN)
     ),
     [_MOUSE] = LAYOUT(
