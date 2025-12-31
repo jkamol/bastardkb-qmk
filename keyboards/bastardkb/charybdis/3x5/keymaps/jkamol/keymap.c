@@ -868,11 +868,19 @@ void DANCE_COPY_finished(tap_dance_state_t *state, void *user_data) {
     switch (tap_state.state) {
         case TD_SINGLE_TAP:
             if (!state->interrupted) {
-                // Only do Ctrl+C if the tap wasn't interrupted by another key
+                // Only do copy if the tap wasn't interrupted by another key
                 unregister_code(KC_LSFT);
-                register_code(KC_RCTL);
-                tap_code(KC_C);
-                unregister_code(KC_RCTL);
+                if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                    // Mac mode - Cmd+C
+                    register_code(KC_LGUI);
+                    tap_code(KC_C);
+                    unregister_code(KC_LGUI);
+                } else {
+                    // Windows/Linux mode - Ctrl+C
+                    register_code(KC_RCTL);
+                    tap_code(KC_C);
+                    unregister_code(KC_RCTL);
+                }
                 register_code(KC_LSFT); // Restore Shift if it was held
             } else {
                 // If interrupted, just act as a normal Shift key press
