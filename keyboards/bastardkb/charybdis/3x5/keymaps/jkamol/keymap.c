@@ -450,10 +450,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                         KC_MS_BTN2,     KC_MS_BTN1,     SW_APP,             /**/ KC_ENTER,          TO(_MAIN)
     ),
     [_MOUSE] = LAYOUT(
-        TO(_MAIN),      SCROLL_UP,      KC_UP,          KC_MS_BTN3,     DPI_MOD,            /**/ XXXXXXX,           XXXXXXX,        XXXXXXX,        XXXXXXX,        XXXXXXX,
-        TD(DANCE_COPY), KC_LEFT,        KC_DOWN,        KC_RIGHT,       SNIPING,            /**/ XXXXXXX,           SNIPING,        KC_MS_BTN1,     KC_MS_BTN2,     SNIPING,
+        TO(_MAIN),      SCROLL_UP,      DRGSCRL,        KC_MS_BTN3,     DPI_MOD,            /**/ XXXXXXX,           XXXXXXX,        XXXXXXX,        XXXXXXX,        XXXXXXX,
+        TD(DANCE_COPY), C(S(KC_TAB)),   A(KC_TAB),      C(KC_TAB),      SNIPING,            /**/ XXXXXXX,           SNIPING,        KC_MS_BTN1,     KC_MS_BTN2,     SNIPING,
         KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     S_D_MOD,            /**/ XXXXXXX,           DRGSCRL,        DPI_MOD,        S_D_MOD,        DRGSCRL,
-                                        KC_MS_BTN2,     KC_MS_BTN1,     DRGSCRL,            /**/ KC_ENTER,          MO(_NAV)
+                                        KC_MS_BTN2,     KC_MS_BTN1,     _______,            /**/ KC_ENTER,          MO(_NAV)
     ),
     [_FN] = LAYOUT(
         KC_1,           KC_2,           KC_3,           KC_4,           KC_5,               /**/ KC_SCROLL_LOCK,    TD(DANCE_PWR),  LCA(KC_DELETE), KC_VOLU,        KC_PAUSE,
