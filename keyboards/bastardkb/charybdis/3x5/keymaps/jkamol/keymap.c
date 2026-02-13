@@ -59,6 +59,7 @@ enum custom_keycodes {          // Make sure have the awesome keycode ready
   SCROLL_DOWN,
   BACK,
   NEXT,
+  APP_KEY,
 };
 
 bool process_detected_host_os_kb(os_variant_t detected_os) {
@@ -314,6 +315,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
       }
       break;
+    case APP_KEY:
+      if (record->event.pressed) {
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          // Mac mode
+          register_code16(LCTL(KC_DOWN));
+        } else {
+          // Windows/Linux mode
+          register_code16(KC_APPLICATION);
+        }
+      } else {
+        // Key released
+        if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+          unregister_code16(LCTL(KC_DOWN));
+        } else {
+          unregister_code16(KC_APPLICATION);
+        }
+      }
+      break;
   }
   return true;
 }
@@ -444,13 +463,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                         MO(_FN),        XXXXXXX,        XXXXXXX,            /**/ _______,           MO(_MACRO)
     ),
     [_NAV] = LAYOUT(
-        RCTL(KC_LSFT),  SCROLL_UP,      KC_MS_UP,       KC_MS_BTN3,     KC_RALT,            /**/ KC_ACL0,           KC_APPLICATION, KC_UP,          KC_PAGE_UP,     KC_CAPS_LOCK,
+        RCTL(KC_LSFT),  SCROLL_UP,      KC_MS_UP,       KC_MS_BTN3,     KC_RALT,            /**/ KC_ACL0,           APP_KEY,        KC_UP,          KC_PAGE_UP,     KC_CAPS_LOCK,
         TD(DANCE_COPY), KC_MS_LEFT,     KC_MS_DOWN,     KC_MS_RIGHT,    KC_INSERT,          /**/ KC_HOME,           KC_LEFT,        KC_DOWN,        KC_RIGHT,       LSFT_T(KC_END),
         KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     KC_LCTL,            /**/ KC_BSPC,           KC_DELETE,      RGUI(KC_SPACE), KC_PAGE_DOWN,   KC_RCTL,
                                         KC_MS_BTN2,     KC_MS_BTN1,     SW_APP,             /**/ KC_ENTER,          TO(_MAIN)
     ),
     [_MOUSE] = LAYOUT(
-        TO(_MAIN),      SCROLL_UP,      DRGSCRL,        KC_MS_BTN3,     BACK,               /**/ XXXXXXX,           XXXXXXX,        XXXXXXX,        XXXXXXX,        XXXXXXX,
+        TO(_MAIN),      SCROLL_UP,      DRGSCRL,        KC_MS_BTN3,     BACK,               /**/ XXXXXXX,           APP_KEY,        TO(_MAIN),      XXXXXXX,        XXXXXXX,
         TD(DANCE_COPY), C(S(KC_TAB)),   A(KC_GRAVE),    C(KC_TAB),      SNIPING,            /**/ XXXXXXX,           SNIPING,        KC_MS_BTN1,     KC_MS_BTN2,     SNIPING,
         KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     NEXT,               /**/ XXXXXXX,           DRGSCRL,        DPI_MOD,        S_D_MOD,        DRGSCRL,
                                         KC_MS_BTN2,     KC_MS_BTN1,     A(KC_TAB),          /**/ KC_ENTER,          MO(_NAV)
