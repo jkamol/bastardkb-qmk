@@ -420,7 +420,7 @@ const uint16_t PROGMEM macro_cr_combo[] = {LT(_SYM,KC_SPACE), LT(_NAV,KC_E), COM
 const uint16_t PROGMEM macro_lt_combo[] = {KC_G, RGUI_T(KC_K), COMBO_END};
 const uint16_t PROGMEM macro_rt_combo[] = {KC_M, LGUI_T(KC_SCLN), COMBO_END};
 const uint16_t PROGMEM num_mo_combo[]   = {KC_T, KC_W, COMBO_END};
-const uint16_t PROGMEM num_to_combo[]   = {KC_T, KC_W, KC_G, LGUI_T(KC_K), COMBO_END};
+const uint16_t PROGMEM num_to_combo[]   = {KC_T, KC_W, KC_G, RGUI_T(KC_K), COMBO_END};
 const uint16_t PROGMEM lock_nav[]       = {LT(_NAV,KC_E), LT(_FN,KC_ENTER), COMBO_END};
 
 combo_t key_combos[] = {
