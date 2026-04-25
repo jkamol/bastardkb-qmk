@@ -41,7 +41,6 @@ bool is_alt_tab_active = false; // ADD this near the beginning of keymap.c
 uint16_t alt_tab_timer = 0;     // we will be using them soon.
 bool is_cmd_tab_active = false; // For Mac CMD+TAB
 uint16_t cmd_tab_timer = 0;     // Timer for CMD+TAB
-uint16_t SW_LANG = RGUI(KC_SPACE); // Default language switch key
 
 enum custom_keycodes {          // Make sure have the awesome keycode ready
   ALT_TAB = SAFE_RANGE,
@@ -62,6 +61,8 @@ enum custom_keycodes {          // Make sure have the awesome keycode ready
   APP_KEY,
 };
 
+// This function will be called when the keyboard first connects to the computer and whenever the operating system is detected or changes.
+// You can use it to set up OS-specific behavior, such as swapping the Command and Alt keys on macOS.
 bool process_detected_host_os_kb(os_variant_t detected_os) {
     if (!process_detected_host_os_user(detected_os)) {
         return false;
@@ -70,27 +71,22 @@ bool process_detected_host_os_kb(os_variant_t detected_os) {
         case OS_MACOS:
             keymap_config.swap_lalt_lgui = true;
             keymap_config.swap_rctl_rgui = true;
-            SW_LANG = LCTL(KC_SPACE);
             break;
         case OS_IOS:
             keymap_config.swap_lalt_lgui = true;
             keymap_config.swap_rctl_rgui = true;
-            SW_LANG = LCTL(KC_SPACE);
             break;
         case OS_WINDOWS:
             keymap_config.swap_lalt_lgui = false;
             keymap_config.swap_rctl_rgui = false;
-            SW_LANG = LALT(KC_LSFT);
             break;
         case OS_LINUX:
             keymap_config.swap_lalt_lgui = false;
             keymap_config.swap_rctl_rgui = false;
-            SW_LANG = LALT(KC_LSFT);
             break;
         case OS_UNSURE:
             keymap_config.swap_lalt_lgui = false;
             keymap_config.swap_rctl_rgui = false;
-            SW_LANG = LALT(KC_LSFT);
             break;
     }
 
@@ -414,11 +410,11 @@ uint16_t COMBO_LEN = COMBO_LENGTH;
 const uint16_t PROGMEM enter_combo[]    = {LALT_T(KC_R), LCTL_T(KC_S), COMBO_END};
 const uint16_t PROGMEM escape_combo[]   = {KC_L, KC_D, COMBO_END};
 const uint16_t PROGMEM shct_combo[]     = {LT(_SYM,KC_SPACE), RCTL_T(KC_TAB), COMBO_END};
-const uint16_t PROGMEM fn_to_combo[]    = {KC_N, KC_H, KC_M, LGUI_T(KC_SCLN), COMBO_END};
+const uint16_t PROGMEM fn_to_combo[]    = {KC_N, KC_H, KC_M, RGUI_T(KC_SCLN), COMBO_END};
 const uint16_t PROGMEM lang_sw_combo[]  = {LSFT_T(KC_C), LALT_T(KC_R), COMBO_END};
 const uint16_t PROGMEM macro_cr_combo[] = {LT(_SYM,KC_SPACE), LT(_NAV,KC_E), COMBO_END};
 const uint16_t PROGMEM macro_lt_combo[] = {KC_G, RGUI_T(KC_K), COMBO_END};
-const uint16_t PROGMEM macro_rt_combo[] = {KC_M, LGUI_T(KC_SCLN), COMBO_END};
+const uint16_t PROGMEM macro_rt_combo[] = {KC_M, RGUI_T(KC_SCLN), COMBO_END};
 const uint16_t PROGMEM num_mo_combo[]   = {KC_T, KC_W, COMBO_END};
 const uint16_t PROGMEM num_to_combo[]   = {KC_T, KC_W, KC_G, RGUI_T(KC_K), COMBO_END};
 const uint16_t PROGMEM lock_nav[]       = {LT(_NAV,KC_E), LT(_FN,KC_ENTER), COMBO_END};
@@ -441,7 +437,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_MAIN] = LAYOUT(
         C_S_T(KC_Q),    KC_L,           KC_D,           KC_P,           ALGR_T(KC_B),       /**/ ALGR_T(KC_J),      KC_F,           KC_O,           KC_U,           LSA_T(KC_QUOTE),
         LSFT_T(KC_C),   LALT_T(KC_R),   LCTL_T(KC_S),   KC_T,           KC_G,               /**/ KC_M,              KC_N,           LCTL_T(KC_A),   KC_I,           LSFT_T(KC_Y),
-        RCTL_T(KC_Z),   KC_X,           KC_V,           KC_W,           RGUI_T(KC_K),       /**/ LGUI_T(KC_SCLN),   KC_H,           KC_SLASH,       KC_COMMA,       RCTL_T(KC_DOT),
+        RCTL_T(KC_Z),   KC_X,           KC_V,           KC_W,           RGUI_T(KC_K),       /**/ RGUI_T(KC_SCLN),   KC_H,           KC_SLASH,       KC_COMMA,       RCTL_T(KC_DOT),
                                         RCTL_T(KC_TAB), LT(_SYM,KC_SPACE), SW_APP,          /**/ LT(_FN,KC_ENTER),  LT(_NAV,KC_E)
     ),
     [_QWERTY] = LAYOUT(
@@ -452,7 +448,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [_SHORTCUT] = LAYOUT(
         TO(_MAIN),      KC_HOME,        KC_UP,          KC_END,         KC_MS_BTN2,         /**/ XXXXXXX,           XXXXXXX,        XXXXXXX,        XXXXXXX,        XXXXXXX,
-        RCTL(KC_A),     KC_LEFT,        KC_DOWN,        KC_RIGHT,       KC_MS_BTN1,         /**/ XXXXXXX,           KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,        XXXXXXX,
+        RCTL(KC_A),     KC_LEFT,        KC_DOWN,        KC_RIGHT,       KC_MS_BTN1,         /**/ XXXXXXX,           XXXXXXX,        KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,
         RCTL(KC_Z),     KC_BSPC,        LAG(LSFT(KC_V)),RCTL(KC_V),     RCTL(KC_Y),         /**/ XXXXXXX,           HTTPS,          XXXXXXX,        XXXXXXX,        XXXXXXX,
                                         _______,        _______,        XXXXXXX,            /**/ _______,           _______
     ),
@@ -469,9 +465,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                         KC_MS_BTN2,     KC_MS_BTN1,     SW_APP,             /**/ KC_ENTER,          TO(_MAIN)
     ),
     [_MOUSE] = LAYOUT(
-        TO(_MAIN),      SCROLL_UP,      DRGSCRL,        KC_MS_BTN3,     BACK,               /**/ XXXXXXX,           APP_KEY,        TO(_MAIN),      XXXXXXX,        XXXXXXX,
-        TD(DANCE_COPY), C(S(KC_TAB)),   A(KC_GRAVE),    C(KC_TAB),      SNIPING,            /**/ XXXXXXX,           SNIPING,        KC_MS_BTN1,     KC_MS_BTN2,     SNIPING,
-        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     NEXT,               /**/ XXXXXXX,           DRGSCRL,        DPI_MOD,        S_D_MOD,        DRGSCRL,
+        TO(_MAIN),      SCROLL_UP,      DRGSCRL,        KC_MS_BTN3,     BACK,               /**/ XXXXXXX,           APP_KEY,        TO(_MAIN),      RCTL(KC_R),     XXXXXXX,
+        TD(DANCE_COPY), C(S(KC_TAB)),   A(KC_GRAVE),    C(KC_TAB),      SNIPING,            /**/ XXXXXXX,           SNIPING,        KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,
+        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     NEXT,               /**/ KC_BSPC,           DRGSCRL,        DPI_MOD,        S_D_MOD,        XXXXXXX,
                                         KC_MS_BTN2,     KC_MS_BTN1,     A(KC_TAB),          /**/ KC_ENTER,          MO(_NAV)
     ),
     [_FN] = LAYOUT(
@@ -555,11 +551,33 @@ void on_DANCE_QUIT(tap_dance_state_t *state, void *user_data) {
 void DANCE_QUIT_finished(tap_dance_state_t *state, void *user_data) {
     tap_state.state = cur_dance(state);
     switch (tap_state.state) {
-        case TD_SINGLE_TAP:         register_code16(KC_6); break;
-        case TD_SINGLE_HOLD:        register_code16(LALT(KC_F4)); break;
-        case TD_DOUBLE_TAP:         register_code16(KC_6); register_code16(KC_6); break;
-        case TD_DOUBLE_HOLD:        register_code16(LALT(KC_F4)); break;
-        case TD_DOUBLE_SINGLE_TAP:  tap_code16(KC_6); register_code16(KC_6); break;
+        case TD_SINGLE_TAP:
+            register_code16(KC_6);
+            break;
+        case TD_SINGLE_HOLD:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                // Mac mode - CMD+CTRL+Q
+                register_code16(LCTL(LGUI(KC_Q)));
+            } else {
+                register_code16(LALT(KC_F4));
+            }
+            break;
+        case TD_DOUBLE_TAP:
+            register_code16(KC_6);
+            register_code16(KC_6);
+            break;
+        case TD_DOUBLE_HOLD:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                // Mac mode - CMD+CTRL+Q
+                register_code16(LCTL(LGUI(KC_Q)));
+            } else {
+                register_code16(LALT(KC_F4));
+            }
+            break;
+        case TD_DOUBLE_SINGLE_TAP:
+            tap_code16(KC_6);
+            register_code16(KC_6);
+            break;
         default: break;
     }
 }
@@ -567,11 +585,29 @@ void DANCE_QUIT_finished(tap_dance_state_t *state, void *user_data) {
 void DANCE_QUIT_reset(tap_dance_state_t *state, void *user_data) {
     wait_ms(10);
     switch (tap_state.state) {
-        case TD_SINGLE_TAP:         unregister_code16(KC_6); break;
-        case TD_SINGLE_HOLD:        unregister_code16(LALT(KC_F4)); break;
-        case TD_DOUBLE_TAP:         unregister_code16(KC_6); break;
-        case TD_DOUBLE_HOLD:        unregister_code16(LALT(KC_F4)); break;
-        case TD_DOUBLE_SINGLE_TAP:  unregister_code16(KC_6); break;
+        case TD_SINGLE_TAP:
+            unregister_code16(KC_6);
+            break;
+        case TD_SINGLE_HOLD:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                unregister_code16(LCTL(LGUI(KC_Q)));
+            } else {
+                unregister_code16(LALT(KC_F4));
+            }
+            break;
+        case TD_DOUBLE_TAP:
+            unregister_code16(KC_6);
+            break;
+        case TD_DOUBLE_HOLD:
+            if (keymap_config.swap_lalt_lgui || keymap_config.swap_rctl_rgui) {
+                unregister_code16(LCTL(LGUI(KC_Q)));
+            } else {
+                unregister_code16(LALT(KC_F4));
+            }
+            break;
+        case TD_DOUBLE_SINGLE_TAP:
+            unregister_code16(KC_6);
+            break;
         default: break;
     }
     tap_state.state = TD_NONE;
