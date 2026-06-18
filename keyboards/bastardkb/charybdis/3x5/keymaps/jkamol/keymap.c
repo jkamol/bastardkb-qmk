@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include QMK_KEYBOARD_H
+#include "os_detection.h"
 
 #ifdef CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_ENABLE
 #    include "timer.h"
@@ -59,6 +60,7 @@ enum custom_keycodes {          // Make sure have the awesome keycode ready
   BACK,
   NEXT,
   APP_KEY,
+  LANG_SWITCH,
 };
 
 // This function will be called when the keyboard first connects to the computer and whenever the operating system is detected or changes.
@@ -329,6 +331,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
       }
       break;
+    case LANG_SWITCH: {
+      os_variant_t host = detected_host_os();
+      if (record->event.pressed) {
+        if (host == OS_MACOS || host == OS_IOS) {
+          tap_code16(LCTL(KC_SPACE));
+        } else {
+          tap_code16(LGUI(KC_SPACE));
+        }
+      }
+      break;
+    }
   }
   return true;
 }
@@ -424,7 +437,7 @@ combo_t key_combos[] = {
     [ESC]      = COMBO(escape_combo, KC_ESCAPE),
     [SHORTCUT] = COMBO(shct_combo, MO(_SHORTCUT)),
     [FN_TO]    = COMBO(fn_to_combo, TO(_FN)),
-    [LANG_SW]  = COMBO(lang_sw_combo, RGUI(KC_SPACE)),
+    [LANG_SW]  = COMBO(lang_sw_combo, LANG_SWITCH),
     [MACRO_CR] = COMBO(macro_cr_combo, MO(_MACRO)),
     [MACRO_LT] = COMBO(macro_lt_combo, MO(_MACRO)),
     [MACRO_RT] = COMBO(macro_rt_combo, MO(_MACRO)),
@@ -461,13 +474,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NAV] = LAYOUT(
         RCTL(KC_LSFT),  SCROLL_UP,      KC_MS_UP,       KC_MS_BTN3,     KC_RALT,            /**/ KC_ACL0,           APP_KEY,        KC_UP,          KC_PAGE_UP,     KC_CAPS_LOCK,
         TD(DANCE_COPY), KC_MS_LEFT,     KC_MS_DOWN,     KC_MS_RIGHT,    KC_INSERT,          /**/ KC_HOME,           KC_LEFT,        KC_DOWN,        KC_RIGHT,       LSFT_T(KC_END),
-        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     KC_LCTL,            /**/ KC_BSPC,           KC_DELETE,      RGUI(KC_SPACE), KC_PAGE_DOWN,   KC_RCTL,
+        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     KC_LCTL,            /**/ RALT_T(KC_BSPC),   KC_DELETE,      LANG_SWITCH,     KC_PAGE_DOWN,   KC_RCTL,
                                         KC_MS_BTN2,     KC_MS_BTN1,     SW_APP,             /**/ KC_ENTER,          TO(_MAIN)
     ),
     [_MOUSE] = LAYOUT(
         TO(_MAIN),      SCROLL_UP,      DRGSCRL,        KC_MS_BTN3,     BACK,               /**/ XXXXXXX,           APP_KEY,        TO(_MAIN),      RCTL(KC_R),     XXXXXXX,
-        TD(DANCE_COPY), C(S(KC_TAB)),   A(KC_GRAVE),    C(KC_TAB),      SNIPING,            /**/ XXXXXXX,           SNIPING,        KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,
-        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     NEXT,               /**/ KC_BSPC,           DRGSCRL,        DPI_MOD,        S_D_MOD,        XXXXXXX,
+        TD(DANCE_COPY), C(S(KC_TAB)),   A(KC_GRAVE),    C(KC_TAB),      SNIPING,            /**/ XXXXXXX,           DRGSCRL,        KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,
+        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     NEXT,               /**/ KC_BSPC,           SNIPING,        DPI_MOD,        S_D_MOD,        XXXXXXX,
                                         KC_MS_BTN2,     KC_MS_BTN1,     A(KC_TAB),          /**/ KC_ENTER,          MO(_NAV)
     ),
     [_FN] = LAYOUT(
