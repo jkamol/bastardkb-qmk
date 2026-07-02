@@ -450,7 +450,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_MAIN] = LAYOUT(
         C_S_T(KC_Q),    KC_L,           KC_D,           KC_P,           ALGR_T(KC_B),       /**/ ALGR_T(KC_J),      KC_F,           KC_O,           KC_U,           LSA_T(KC_QUOTE),
         LSFT_T(KC_C),   LALT_T(KC_R),   LCTL_T(KC_S),   KC_T,           KC_G,               /**/ KC_M,              KC_N,           LCTL_T(KC_A),   KC_I,           LSFT_T(KC_Y),
-        RCTL_T(KC_Z),   KC_X,           KC_V,           KC_W,           RGUI_T(KC_K),       /**/ RGUI_T(KC_SCLN),   KC_H,           KC_SLASH,       KC_COMMA,       RCTL_T(KC_DOT),
+        RCTL_T(KC_Z),   KC_X,           KC_V,           KC_W,           LGUI_T(KC_K),       /**/ LGUI_T(KC_SCLN),   KC_H,           KC_SLASH,       KC_COMMA,       RCTL_T(KC_DOT),
                                         RCTL_T(KC_TAB), LT(_SYM,KC_SPACE), SW_APP,          /**/ LT(_FN,KC_ENTER),  LT(_NAV,KC_E)
     ),
     [_QWERTY] = LAYOUT(
@@ -460,7 +460,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                         _______,        _______,        XXXXXXX,            /**/ _______,           _______
     ),
     [_SHORTCUT] = LAYOUT(
-        TO(_MAIN),      KC_HOME,        KC_UP,          KC_END,         KC_MS_BTN2,         /**/ XXXXXXX,           XXXXXXX,        XXXXXXX,        XXXXXXX,        XXXXXXX,
+        TO(_MAIN),      LALT(KC_GRAVE), KC_UP,          LCTL(KC_GRAVE), KC_MS_BTN2,         /**/ XXXXXXX,           XXXXXXX,        XXXXXXX,        XXXXXXX,        XXXXXXX,
         RCTL(KC_A),     KC_LEFT,        KC_DOWN,        KC_RIGHT,       KC_MS_BTN1,         /**/ XXXXXXX,           XXXXXXX,        KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,
         RCTL(KC_Z),     KC_BSPC,        LAG(LSFT(KC_V)),RCTL(KC_V),     RCTL(KC_Y),         /**/ XXXXXXX,           HTTPS,          XXXXXXX,        XXXXXXX,        XXXXXXX,
                                         _______,        _______,        XXXXXXX,            /**/ _______,           _______
@@ -474,11 +474,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NAV] = LAYOUT(
         RCTL(KC_LSFT),  SCROLL_UP,      KC_MS_UP,       KC_MS_BTN3,     KC_RALT,            /**/ KC_ACL0,           APP_KEY,        KC_UP,          KC_PAGE_UP,     KC_CAPS_LOCK,
         TD(DANCE_COPY), KC_MS_LEFT,     KC_MS_DOWN,     KC_MS_RIGHT,    KC_INSERT,          /**/ KC_HOME,           KC_LEFT,        KC_DOWN,        KC_RIGHT,       LSFT_T(KC_END),
-        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     KC_LCTL,            /**/ RALT_T(KC_BSPC),   KC_DELETE,      LANG_SWITCH,     KC_PAGE_DOWN,   KC_RCTL,
+        KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     KC_LCTL,            /**/ RALT_T(KC_BSPC),   KC_DELETE,      LANG_SWITCH,    KC_PAGE_DOWN,   KC_RCTL,
                                         KC_MS_BTN2,     KC_MS_BTN1,     SW_APP,             /**/ KC_ENTER,          TO(_MAIN)
     ),
     [_MOUSE] = LAYOUT(
-        TO(_MAIN),      SCROLL_UP,      DRGSCRL,        KC_MS_BTN3,     BACK,               /**/ XXXXXXX,           APP_KEY,        TO(_MAIN),      RCTL(KC_R),     XXXXXXX,
+        TO(_MAIN),      SCROLL_UP,      RCTL(KC_R),     KC_MS_BTN3,     BACK,               /**/ XXXXXXX,           APP_KEY,        RCTL(KC_R),     XXXXXXX,        TO(_MAIN),
         TD(DANCE_COPY), C(S(KC_TAB)),   A(KC_GRAVE),    C(KC_TAB),      SNIPING,            /**/ XXXXXXX,           DRGSCRL,        KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,
         KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     NEXT,               /**/ KC_BSPC,           SNIPING,        DPI_MOD,        S_D_MOD,        XXXXXXX,
                                         KC_MS_BTN2,     KC_MS_BTN1,     A(KC_TAB),          /**/ KC_ENTER,          MO(_NAV)
