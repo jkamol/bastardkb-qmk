@@ -478,8 +478,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                         KC_MS_BTN2,     KC_MS_BTN1,     SW_APP,             /**/ KC_ENTER,          TO(_MAIN)
     ),
     [_MOUSE] = LAYOUT(
-        TO(_MAIN),      SCROLL_UP,      RCTL(KC_R),     KC_MS_BTN3,     BACK,               /**/ XXXXXXX,           APP_KEY,        RCTL(KC_R),     XXXXXXX,        TO(_MAIN),
-        TD(DANCE_COPY), C(S(KC_TAB)),   A(KC_GRAVE),    C(KC_TAB),      SNIPING,            /**/ XXXXXXX,           DRGSCRL,        KC_MS_BTN1,     KC_MS_BTN2,     XXXXXXX,
+        TO(_MAIN),      SCROLL_UP,      RCTL(KC_R),     KC_MS_BTN3,     BACK,               /**/ KC_MS_BTN3,        APP_KEY,        RCTL(KC_R),     XXXXXXX,        TO(_MAIN),
+        TD(DANCE_COPY), C(S(KC_TAB)),   A(KC_GRAVE),    C(KC_TAB),      SNIPING,            /**/ BACK,              DRGSCRL,        KC_MS_BTN1,     KC_MS_BTN2,     NEXT,
         KC_RCTL,        SCROLL_DOWN,    RCTL(KC_V),     RCTL(KC_W),     NEXT,               /**/ KC_BSPC,           SNIPING,        DPI_MOD,        S_D_MOD,        XXXXXXX,
                                         KC_MS_BTN2,     KC_MS_BTN1,     A(KC_TAB),          /**/ KC_ENTER,          MO(_NAV)
     ),
